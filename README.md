@@ -1,2 +1,2 @@
 # SubmitPress
-Manage User-Contributed Online Magazines with Wordpress
+Manage Your User-Contributed Online Magazine with Wordpress

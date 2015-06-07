@@ -7,7 +7,7 @@ Stable tag: 1.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
-Manage User-Contributed Online Magazines with Wordpress
+Manage Your User-Contributed Online Magazine with Wordpress
 
 == Description ==
 

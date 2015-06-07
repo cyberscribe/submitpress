@@ -6,9 +6,9 @@ class SubmitPressContent {
     }
 
     public function register_enqueue_scripts_css() {
-        wp_register_style('submitpress_css', plugin_dir_url( __FILE__ ) . 'css/style.css');
+        wp_register_style('submitpress_css', dirname(plugin_dir_url( __FILE__ )) . 'css/style.css');
         wp_enqueue_style('submitpress_css');
-        wp_register_script('submitpress_js', plugin_dir_url( __FILE__ ) . 'js/main.js');
+        wp_register_script('submitpress_js', dirname(plugin_dir_url( __FILE__ )) . 'js/main.js');
         wp_enqueue_script('submitpress_js');
     }
 
