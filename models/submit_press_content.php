@@ -1,6 +1,24 @@
 <?php
 class SubmitPressContent {
 
+    public function load_textdomain() {
+        load_plugin_textdomain( 'submitpress', false, dirname(dirname( plugin_dir_path( __FILE__ ) ) ) . '/languages/' );
+    }
+
+    public function register_enqueue_scripts_css() {
+        wp_register_style('submitpress_css', plugin_dir_url( __FILE__ ) . 'css/style.css');
+        wp_enqueue_style('submitpress_css');
+        wp_register_script('submitpress_js', plugin_dir_url( __FILE__ ) . 'js/main.js');
+        wp_enqueue_script('submitpress_js');
+    }
+
+    public function register_enqueue_admin_scripts_css() {
+    }
+
+    public function register_menu_page(){
+        add_options_page( __('SubmitPress Options','submitpress'), __('SubmitPress','submitpress'), 'manage_options', dirname(plugin_dir_path(  __FILE__ )).'/views/admin.php');
+    }
+
     public function create_custom_post_types() {
         register_post_type( 'sp_submission',
             array(

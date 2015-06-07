@@ -17,6 +17,7 @@ if ( ! defined( 'WPINC' ) ) {
 class SubmitPress {
 
     private static $instance;
+    private $actions;
     private $permissions;
     private $content;
     private $settings;
@@ -54,111 +55,59 @@ class SubmitPress {
         $this->settings = new SubmitPressSettings();
 
         /* general setup */
-        add_action( 'init', array($this->content, 'create_custom_post_types' ));
-        add_action( 'plugins_loaded', array($this, 'load_textdomain'));
+        $this->add_action( 'init', array($this->content, 'create_custom_post_types' ));
+        $this->add_action( 'plugins_loaded', array($this->content, 'load_textdomain'));
 
         /* login */
-        add_action('login_form',array($this, 'login_form'));
+        $this->add_action('login_form',array($this->permissions, 'login_form'));
 
         /* public */
-        add_action('enqueue_scripts', array($this, 'register_enqueue_scripts_css'));
+        $this->add_action('enqueue_scripts', array($this->content, 'register_enqueue_scripts_css'));
 
         /* admin */
-        add_action( 'admin_menu', array($this, 'register_menu_page' ));
-        add_action( 'admin_init', array($this, 'register_settings' ));
-        add_action( 'admin_init', array($this, 'create_custom_admin_permissions'));
-        add_action('admin_enqueue_scripts', array($this, 'register_enqueue_admin_scripts_css'));
-        add_action( 'pre_get_posts', array($this,'filter_submissions_by_author') );
+        $this->add_action( 'admin_menu', array($this->content, 'register_menu_page' ));
+        $this->add_action( 'admin_init', array($this->settings, 'register_settings' ));
+        $this->add_action( 'admin_init', array($this->permissions, 'create_custom_admin_permissions'));
+        $this->add_action('admin_enqueue_scripts', array($this->content, 'register_enqueue_admin_scripts_css'));
+        $this->add_action( 'pre_get_posts', array($this->permissions,'filter_submissions_by_author') );
     }
 
     public function activate() {
         $this->content->create_custom_post_types();
-        $this->create_new_roles();
+        $this->permissions->create_new_roles();
         flush_rewrite_rules();
     }
 
     public function deactivate() {
-        $this->delete_new_roles();
+        $this->permissions->delete_new_roles();
         flush_rewrite_rules();
     }
 
-
-    public function create_custom_admin_permissions() {
-        $admins = get_role( 'administrator' );
-        $admins->add_cap( 'edit_sp_submission' ); 
-        $admins->add_cap( 'edit_sp_submissions' ); 
-        $admins->add_cap( 'edit_others_sp_submissions' ); 
-        $admins->add_cap( 'publish_sp_submissions' ); 
-        $admins->add_cap( 'read_sp_submission' ); 
-        $admins->add_cap( 'read_private_sp_submissions' ); 
-        $admins->add_cap( 'delete_sp_submission' ); 
-        $admins->add_cap('manage_sp_issues' );
-        $admins->add_cap('edit_sp_submissions' );
+    public function run() {
+        $this->add_all_actions();
     }
 
-    private function create_new_roles() {
-        $this->delete_new_roles();
-        add_role( 'sp_submitter', __( 'Submitter' ),
-                   array(
-                        'edit_sp_submission' => true,
-                        'edit_sp_submissions' => true,
-                        'create_sp_submissions' => true,
-                        'read' => true,
-                   )
-        );
+    private function add_action( $hook, $array, $priority = 10, $accepted_args = 1) {
+        $this->actions[] = array(
+                                'hook' => $hook,
+                                'class' => $array[0],
+                                'method' => $array[1],
+                                'priority' => $priority,
+                                'accepted_args' => $accepted_args
+                          );
+        add_action($hook, $array, $priority, $args);
     }
 
-    private function delete_new_roles() {
-        remove_role('sp_submitter');
-    }
-
-    function filter_submissions_by_author( $wp_query_obj ) {
-        global $current_user, $pagenow;
-        get_currentuserinfo();
-
-        if(is_admin() ) {
-            if( is_a( $current_user, 'WP_User') && 
-                'edit.php' == $pagenow &&  
-                'sp_submission' == $wp_query_obj->query['post_type'] ) {
-                if( !current_user_can( 'edit_others_sp_submissions' ) ) {
-                    $wp_query_obj->set('author', $current_user->ID );
-                }
-            }
+    private function add_all_actions() {
+        $actions = apply_filters('sp_actions',$this->actions);
+        foreach( $actions as $action) {
+            $hook = $action['hook'];
+            $array = array($action['class'],$action['method']);
+            $priority = $action['priority'];
+            $args = $action['accepted_args'];
+            add_action($hook, $array, $priority, $args);
         }
     }
-
-
-    public function load_textdomain() {
-        load_plugin_textdomain( 'submitpress', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-    }
-
-    public function register_menu_page(){
-        add_options_page( __('SubmitPress Options','submitpress'), __('SubmitPress','submitpress'), 'manage_options', plugin_dir_path(  __FILE__ ).'views/admin.php');
-    }
-
-    public function register_settings() {
-        add_option('submitpress_option_1', '');
-        register_setting( 'submitpress', 'submitpress_option_1', 'SubmitPress::filter_string' );
-
-    }
-
-    public static function filter_string( $string ) {
-        return filter_var($string, FILTER_SANITIZE_STRING);
-    }
-
-    public function register_enqueue_scripts_css() {
-        wp_register_style('submitpress_css', plugin_dir_url( __FILE__ ) . 'css/style.css');
-        wp_enqueue_style('submitpress_css');
-        wp_register_script('submitpress_js', plugin_dir_url( __FILE__ ) . 'js/main.js');
-        wp_enqueue_script('submitpress_js');
-    }
-
-    public function register_enqueue_admin_scripts_css() {
-    }
-
-    public function login_form() {
-        // display Twitter, Fb, etc.
-    }
-
 }
-SubmitPress::init();
+$submitpress = SubmitPress::init();
+$submitpress->run();
