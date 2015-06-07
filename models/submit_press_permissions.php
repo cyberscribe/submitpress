@@ -1,7 +1,7 @@
 <?php
 class SubmitPressPermissions {
 
-    public function create_custom_admin_permissions() {
+    public function add_custom_capabilities() {
         $admins = get_role( 'administrator' );
         $admins->add_cap( 'edit_sp_submission' ); 
         $admins->add_cap( 'edit_sp_submissions' ); 
@@ -14,8 +14,8 @@ class SubmitPressPermissions {
         $admins->add_cap('edit_sp_submissions' );
     }
 
-    public function create_new_roles() {
-        $this->delete_new_roles();
+    public function add_new_roles() {
+        $this->remove_new_roles();
         add_role( 'sp_submitter', __( 'Submitter' ),
                    array(
                         'edit_sp_submission' => true,
@@ -26,7 +26,7 @@ class SubmitPressPermissions {
         );
     }
 
-    public function delete_new_roles() {
+    public function remove_new_roles() {
         remove_role('sp_submitter');
     }
 

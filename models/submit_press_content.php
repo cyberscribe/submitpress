@@ -1,6 +1,16 @@
 <?php
 class SubmitPressContent {
 
+    private $statuses;
+
+    public function __construct() {
+        $this->statuses = array(
+                              'accepted' => array(__('accepted','submitpress'), _n_noop('Accepted (%s)','Accepted (%s','submitpress')),
+                              'rejected' => array(__('rejected','submitpress'), _n_noop('Rejected (%s)','Rejected (%s','submitpress')),
+                              'withdrawn' => array(__('withdrawn','submitpress'), _n_noop('Withdrawn (%s)','Withdrawn (%s','submitpress')),
+                             );
+    }
+
     public function load_textdomain() {
         load_plugin_textdomain( 'submitpress', false, dirname(dirname( plugin_dir_path( __FILE__ ) ) ) . '/languages/' );
     }
@@ -19,7 +29,7 @@ class SubmitPressContent {
         add_options_page( __('SubmitPress Options','submitpress'), __('SubmitPress','submitpress'), 'manage_options', dirname(plugin_dir_path(  __FILE__ )).'/views/admin.php');
     }
 
-    public function create_custom_post_types() {
+    public function register_custom_content() {
         register_post_type( 'sp_submission',
             array(
                 'labels' => array(
@@ -100,6 +110,36 @@ class SubmitPressContent {
                     'sort' => true,
             )
         );
+        foreach ($this->status as $status => $labels) {
+            register_post_status($status, array(
+                                     'label'                     => $labels[0],
+                                     'label_count'               => $labels[1], 
+                                     'public'                    => false,
+                                     'show_in_admin_all_list'    => true,
+                                     'show_in_admin_status_list' => true,
+                                     'exclude_from_search'       => true
+                                 )
+            );
+        }
+    }
+
+    public function inject_custom_submitbox_status() {
+        global $post;
+        switch ($post->post_type) {
+            case 'sp_submission':
+                foreach( $this->statuses as $status => $labels) {
+                    $selected = '';
+                    if ($post->post_status == $status) {
+                        $selected = 'selected="selected"';
+                        echo '$(".misc-pub-section label").append("<span id=\"post-status-display\"> '.$labels[0].'</span>");';
+                    }
+                    echo '$("select#post_status").append("<option value=\"'.$status.'\" '.$selected.'> '.$labels[0].'</option>");';
+                }
+            break;
+            default:
+            break;
+        }
+
     }
 
     public function register_contribution_meta_box( $post ) {

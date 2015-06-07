@@ -55,7 +55,7 @@ class SubmitPress {
         $this->settings = new SubmitPressSettings();
 
         /* general setup */
-        $this->add_action( 'init', array($this->content, 'create_custom_post_types' ));
+        $this->add_action( 'init', array($this->content, 'register_custom_content' ));
         $this->add_action( 'plugins_loaded', array($this->content, 'load_textdomain'));
 
         /* login */
@@ -67,19 +67,20 @@ class SubmitPress {
         /* admin */
         $this->add_action( 'admin_menu', array($this->content, 'register_menu_page' ));
         $this->add_action( 'admin_init', array($this->settings, 'register_settings' ));
-        $this->add_action( 'admin_init', array($this->permissions, 'create_custom_admin_permissions'));
+        $this->add_action( 'admin_init', array($this->permissions, 'add_custom_capabilities'));
         $this->add_action('admin_enqueue_scripts', array($this->content, 'register_enqueue_admin_scripts_css'));
         $this->add_action( 'pre_get_posts', array($this->permissions,'filter_submissions_by_author') );
+        $this->add_action('post_submitbox_misc_actions', array($this->content,'inject_custom_submitbox_status'));
     }
 
     public function activate() {
-        $this->content->create_custom_post_types();
-        $this->permissions->create_new_roles();
+        $this->content->register_custom_content();
+        $this->permissions->add_new_roles();
         flush_rewrite_rules();
     }
 
     public function deactivate() {
-        $this->permissions->delete_new_roles();
+        $this->permissions->remove_new_roles();
         flush_rewrite_rules();
     }
 
