@@ -110,7 +110,7 @@ class SubmitPressContent {
                     'sort' => true,
             )
         );
-        foreach ($this->status as $status => $labels) {
+        foreach ($this->statuses as $status => $labels) {
             register_post_status($status, array(
                                      'label'                     => $labels[0],
                                      'label_count'               => $labels[1], 
@@ -127,14 +127,16 @@ class SubmitPressContent {
         global $post;
         switch ($post->post_type) {
             case 'sp_submission':
+                echo '<script>jQuery(document).ready(function($){';
                 foreach( $this->statuses as $status => $labels) {
                     $selected = '';
                     if ($post->post_status == $status) {
                         $selected = 'selected="selected"';
-                        echo '$(".misc-pub-section label").append("<span id=\"post-status-display\"> '.$labels[0].'</span>");';
+                        echo '$(".misc-pub-section label").append("<span id=\"post-status-display\"> '.ucwords($labels[0]).'</span>");';
                     }
-                    echo '$("select#post_status").append("<option value=\"'.$status.'\" '.$selected.'> '.$labels[0].'</option>");';
+                    echo '$("select#post_status").append("<option value=\"'.$status.'\" '.$selected.'> '.ucwords($labels[0]).'</option>");';
                 }
+                echo '});</script>';
             break;
             default:
             break;
