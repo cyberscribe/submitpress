@@ -96,7 +96,7 @@ class SubmitPress {
                                 'priority' => $priority,
                                 'accepted_args' => $accepted_args
                           );
-        add_action($hook, $array, $priority, $args);
+        add_action($hook, $array, $priority, $accepted_args);
     }
 
     private function add_all_actions() {
