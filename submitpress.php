@@ -34,7 +34,7 @@ class SubmitPress {
 
     public static function __autoload( $ClassName ) {
         if (!class_exists($ClassName)) {
-            $file = plugin_dir_path( __FILE__ ) . 'models/' . SubmitPress::cc2_($ClassName) . '.php';
+            $file = plugin_dir_path( __FILE__ ) . 'classes/' . SubmitPress::cc2_($ClassName) . '.php';
             if (file_exists($file)) {
                 require_once($file);
             }
