@@ -3,24 +3,25 @@ class SubmitPressPermissions {
 
     public function add_custom_capabilities() {
         $admins = get_role( 'administrator' );
-        $admins->add_cap( 'edit_sp_submission' ); 
-        $admins->add_cap( 'edit_sp_submissions' ); 
-        $admins->add_cap( 'edit_others_sp_submissions' ); 
-        $admins->add_cap( 'publish_sp_submissions' ); 
-        $admins->add_cap( 'read_sp_submission' ); 
-        $admins->add_cap( 'read_private_sp_submissions' ); 
-        $admins->add_cap( 'delete_sp_submission' ); 
-        $admins->add_cap('manage_sp_issues' );
-        $admins->add_cap('edit_sp_submissions' );
+        $admins->add_cap( 'edit_sp_submission_item' ); 
+        $admins->add_cap( 'edit_sp_submission_items' ); 
+        $admins->add_cap( 'edit_others_sp_submission_items' ); 
+        $admins->add_cap( 'publish_sp_submission_items' ); 
+        $admins->add_cap( 'read_sp_submission_item' ); 
+        $admins->add_cap( 'read_private_sp_submission_items' ); 
+        $admins->add_cap( 'delete_sp_submission_item' ); 
+        $admins->add_cap( 'manage_sp_issue' );
+        $admins->add_cap( 'manage_sp_submission' );
+        $admins->add_cap( 'edit_sp_submission_items' );
     }
 
     public function add_new_roles() {
         $this->remove_new_roles();
         add_role( 'sp_submitter', __( 'Submitter' ),
                    array(
-                        'edit_sp_submission' => true,
-                        'edit_sp_submissions' => true,
-                        'create_sp_submissions' => true,
+                        'edit_sp_submission_item' => true,
+                        'edit_sp_submission_items' => true,
+                        'create_sp_submission_items' => true,
                         'read' => true,
                    )
         );

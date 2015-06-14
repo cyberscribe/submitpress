@@ -1,0 +1,37 @@
+#sp_actions button {
+    width: 100%;
+    text-align: left;
+    padding-left: 2em;
+}
+#sp_actions button.dashicons-before:before {
+    vertical-align: middle;
+    padding-right: 1em;
+}
+.wp-core-ui  .button.green {
+    background: #5c9c4b;
+    border-color: #7db06f;
+    color: #fff;
+    -webkit-box-shadow: inset 0 1px 0 rgba(108,166,93,.5),0 1px 0 rgba(0,0,0,.15);
+    box-shadow: inset 0 1px 0 rgba(108,166,93,.5),0 1px 0 rgba(0,0,0,.15);
+}
+.wp-core-ui .button.green:hover {
+    background: #538c44;
+    border-color: #7db06f;
+    color: #fff;
+    -webkit-box-shadow: inset 0 1px 0 rgba(108,166,93,.5),0 1px 0 rgba(0,0,0,.15);
+    box-shadow: inset 0 1px 0 rgba(108,166,93,.5),0 1px 0 rgba(0,0,0,.15);
+}
+.wp-core-ui  .button.red {
+    background: #a93b4a;
+    border-color: #ba626e;
+    color: #fff;
+    -webkit-box-shadow: inset 0 1px 0 rgba(178,79,92,.5),0 1px 0 rgba(0,0,0,.15);
+    box-shadow: inset 0 1px 0 rgba(178,79,92,.5),0 1px 0 rgba(0,0,0,.15);
+}
+.wp-core-ui .button.red:hover {
+    background: #983543;
+    border-color: #ba626e;
+    color: #fff;
+    -webkit-box-shadow: inset 0 1px 0 rgba(178,79,92,.5),0 1px 0 rgba(0,0,0,.15);
+    box-shadow: inset 0 1px 0 rgba(178,79,92,.5),0 1px 0 rgba(0,0,0,.15);
+}

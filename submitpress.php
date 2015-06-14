@@ -71,6 +71,7 @@ class SubmitPress {
         $this->add_action('admin_enqueue_scripts', array($this->content, 'register_enqueue_admin_scripts_css'));
         $this->add_action( 'pre_get_posts', array($this->permissions,'filter_submissions_by_author') );
         $this->add_action('post_submitbox_misc_actions', array($this->content,'inject_custom_submitbox_status'));
+        $this->add_action('save_post', array($this->content, 'save_post'));
     }
 
     public function activate() {
