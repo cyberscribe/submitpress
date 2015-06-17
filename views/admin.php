@@ -10,9 +10,22 @@ echo settings_fields( 'submitpress' );
 ?>
 <table class="form-table">
     <tr valign="top">
-            <th scope="row"><label for="id_submitpress_option_1"><?php _e('SubmitPress Option 1','submitpress'); ?>: </span>
-            </label></th>
-        <td><input type="text" id="id_submitpress_option_1" name="submitpress_option_1" value="<?php echo get_option('submitpress_option_1'); ?>" size="40" /></td>
+        <th scope="row"><label><?php _e('Accept as','submitpress'); ?>:</label></th>
+        <td>
+            <input type="radio" id="id_submitpress_accept_as_post" name="submitpress_accept_as" value="sp_contribution"
+                <?php if ( get_option('submitpress_accept_as') === 'sp_contribution' ) echo 'checked="checked"'; ?> />
+            <label for="id_submitpress_accept_as_post"><?php _e('New Contribution','submitpress'); ?></label>
+
+            <input type="radio" id="id_submitpress_accept_as_sp_contribution" name="submitpress_accept_as" value="post"
+                <?php if ( get_option('submitpress_accept_as') === 'post' ) echo 'checked="checked"'; ?> />
+            <label for="id_submitpress_accept_as_sp_contribution"><?php _e('New Post','submitpress'); ?></label>
+        </td>
+    </tr>
+    <tr>
+        <th scope="row"><label for="id_submitpress_confirm_accept_reject"><?php _e('Prompt to confirm before accepting or rejecting', 'submitpress'); ?></label></th>
+        <td>
+            <input type="checkbox" id="id_submitpress_confirm_accept_reject" name="submitpress_confirm_accept_reject" value="1" <?php if(get_option('submitpress_confirm_accept_reject')) echo 'checked="checked"'; ?> />
+        </td>
     </tr>
 </table>
 <p>

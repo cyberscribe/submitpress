@@ -149,6 +149,34 @@ class SubmitPressContent {
                     'sort' => true,
             )
         );
+        $this->taxonomies[] = 'sp_genre';
+        register_taxonomy('sp_genre', array('sp_submission_item', 'sp_contribution'),
+            array(  'label' => __('Genre','submitpress'),
+                    'labels' => array(
+                        'name' => 'Genres',
+                        'singular_name' => 'Genre',
+                        'all_items' => __('All Genres','submitpress'),
+                        'edit_item' => __('Edit Genre','submitpress'),
+                        'view_item' => __('View Genre','submitpress'),
+                        'update_item' => __('View Genre','submitpress'),
+                        'add_new_item' => __('Add New Genre','submitpress'),
+                        'new_item_name' => __('New Genre Name','submitpress'),
+                        'search_items' => __('Search Genres','submitpress')
+                    ),
+                    'show_tagcloud' => false,
+                    'register_meta_box_cb' => array($this, 'register_genre_meta_box'),
+                    'show_admin_column' => true,
+                    'hierarchical' => true,
+                    'rewrite' => array('slug' => 'genre'),
+                    'capabilities' => array(
+                        'manage_terms' => 'manage_genre',
+                        'edit_terms' => 'manage_genre',
+                        'delete_terms' => 'manage_genre',
+                        'assign_terms' => 'edit_posts'
+                    ),
+                    'sort' => true,
+            )
+        );
         foreach ($this->statuses as $status => $labels) {
             register_post_status($status, array(
                                      'label'                     => $labels[0],
@@ -198,19 +226,19 @@ class SubmitPressContent {
 
     }
 
+    public function register_genre_meta_box( $post ) {
+
+    }
+
     public function register_submission_item_meta_box( $post ) {
         add_meta_box('sp_actions', __('SubmitPress Actions','submitpress'), array($this, 'display_submission_item_meta_box'), 'sp_submission_item', 'side', 'high');
     }
 
     public function display_submission_item_meta_box( $post ) {
         echo sprintf(__('Post is currently %s','submitpress'), $post->post_status );
-        echo sprintf('<p><button class="button green dashicons-before dashicons-yes" data-confirm="%s" id="accept_contribution">%s</button></p>',
+        echo sprintf('<p><button class="button green dashicons-before dashicons-yes" data-confirm="%s" id="accept_'.get_option('submitpress_accept_as').'">%s</button></p>',
                         __('Are you sure you want to accept this submisison item?','submitpress'),
-                        __('Accept as Contribution','submitpress')
-                    );
-        echo sprintf('<p><button class="button green dashicons-before dashicons-yes" data-confirm="%s" id="accept_post">%s</button></p>',
-                        __('Are you sure you want to accept this submisison item?','submitpress'),
-                        __('Accept as Post','submitpress')
+                        __('Accept','submitpress')
                     );
         echo sprintf('<p><button class="button button-primary dashicons-before dashicons-flag" id="flag">%s</button></p>',__('Flag','submitpress'));
         echo sprintf('<p><button class="button red dashicons-before dashicons-no" data-confirm="%s" id="reject">%s</button></p>',
@@ -218,6 +246,7 @@ class SubmitPressContent {
                         __('Reject','submitpress')
                     );
         echo '<input type="hidden" name="sp_action" id="sp_action" value="" />';
+        echo '<input type="hidden" name="submitpress_confirm_accept_reject" id="submitpress_confirm_accept_reject" value="'.get_option('submitpress_confirm_accept_reject').'" />';
         wp_nonce_field('sp_action-'.$post->ID, 'sp_action_nonce');
     }
 
@@ -245,17 +274,13 @@ class SubmitPressContent {
             return;
             case 'auto-draft':
             return;
-            case 'draft':
-            return;
-            case 'pending':
-            return;
             default:
         }
         if (check_admin_referer('sp_action-'.$post_id, 'sp_action_nonce')) {
             $post_new = array('ID' => $post_id);
             $post_new_id = false;
             switch($_POST['sp_action']) {
-                case 'accept_contribution':
+                case 'accept_sp_contribution':
                     $post_new['post_status'] = 'accepted';
                     $contribution = get_post($post_id,ARRAY_A);
                     $contribution['post_type'] = 'sp_contribution';

@@ -12,7 +12,9 @@ class SubmitPressPermissions {
         $admins->add_cap( 'delete_sp_submission_item' ); 
         $admins->add_cap( 'manage_sp_issue' );
         $admins->add_cap( 'manage_sp_submission' );
+        $admins->add_cap( 'manage_sp_genre' );
         $admins->add_cap( 'edit_sp_submission_items' );
+        remove_meta_box( 'submitdiv', 'sp_submission_item', 'side' );
     }
 
     public function add_new_roles() {
