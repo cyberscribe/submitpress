@@ -53,6 +53,7 @@ class SubmitPress {
         $this->permissions = new SubmitPressPermissions();
         $this->content = new SubmitPressContent();
         $this->settings = new SubmitPressSettings();
+        $this->db = new SubmitPressDb();
 
         /* general setup */
         $this->add_action( 'init', array($this->content, 'register_custom_content' ));
@@ -77,6 +78,7 @@ class SubmitPress {
     public function activate() {
         $this->content->register_custom_content();
         $this->permissions->add_new_roles();
+        $this->db->create_tables();
         flush_rewrite_rules();
     }
 

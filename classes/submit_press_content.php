@@ -93,8 +93,35 @@ class SubmitPressContent {
                 'register_meta_box_cb' => array($this, 'register_contribution_meta_box'),
             )
         );
+        $this->post_types[] = 'sp_correspondence';
+        register_post_type( 'sp_correspondence',
+            array(
+                'labels' => array(
+                  'name' => __( 'Correspondence', 'submitpress' ),
+                  'singular_name' => __( 'Correspondence', 'submitpress' )
+                ),
+                'public' => true,
+                'has_archive' => true,
+                'rewrite' => array('slug' => 'correspondence'),
+                'menu_icon' => 'dashicons-email',
+                'menu_position' => 20,
+                'capability_type' => '',
+                'capabilities' => array(
+                    'edit_post' => 'edit_sp_correspondence',
+                    'edit_posts' => 'edit_sp_correspondences',
+                    'edit_others_posts' => 'edit_others_sp_correspondences',
+                    'publish_posts' => 'publish_sp_correspondences',
+                    'read_post' => 'read_sp_correspondence',
+                    'read_private_posts' => 'read_private_sp_correspondences',
+                    'delete_post' => 'delete_sp_correspondence',
+                ),
+                'map_meta_cap' => true,
+                'supports' => array('title','editor','custom-fields'),
+                'register_meta_box_cb' => array($this, 'register_correspondence_meta_box'),
+            )
+        );
         $this->taxonomies[] = 'sp_issue';
-        register_taxonomy('sp_issue', 'sp_contribution',
+        register_taxonomy('sp_issue', array('sp_contribution','sp_correspondence'),
             array(  'label' => __('Issue','submitpress'),
                     'labels' => array(
                         'name' => 'Issues',
@@ -122,7 +149,7 @@ class SubmitPressContent {
             )
         );
         $this->taxonomies[] = 'sp_submission';
-        register_taxonomy('sp_submission', 'sp_submission_item',
+        register_taxonomy('sp_submission', array('sp_submission_item','sp_correspondence'),
             array(  'label' => __('Submission','submitpress'),
                     'labels' => array(
                         'name' => 'Submissions',
@@ -229,6 +256,10 @@ class SubmitPressContent {
     public function register_genre_meta_box( $post ) {
 
     }
+    
+    public function register_correspondence_meta_box($post) {
+
+    }
 
     public function register_submission_item_meta_box( $post ) {
         add_meta_box('sp_actions', __('SubmitPress Actions','submitpress'), array($this, 'display_submission_item_meta_box'), 'sp_submission_item', 'side', 'high');
@@ -285,9 +316,20 @@ class SubmitPressContent {
                     $contribution = get_post($post_id,ARRAY_A);
                     $contribution['post_type'] = 'sp_contribution';
                     $contribution['post_status'] = 'pending';
+                    $terms_obj_array = wp_get_post_terms($contribution['ID'], 'sp_genre');
+                    $terms = array();
+                    foreach($terms_obj_array as $terms_obj) {
+                        $terms[] = $terms_obj->term_id;
+                    }
                     unset($contribution['ID']);
                     remove_action('save_post', array($this,'save_post') );
-                    $post_new_id = wp_insert_post($contribution);
+                    $result = wp_insert_post($contribution);
+                    if (is_int($result)) {
+                        $post_new_id = $result;
+                        wp_set_post_terms( $post_new_id, $terms, 'sp_genre');
+                    } else {
+                        throw $result;
+                    }
                     add_action('save_post', array($this,'save_post') );
                 break;
                 case 'accept_post':
@@ -297,7 +339,10 @@ class SubmitPressContent {
                     $post_accepted['post_status'] = 'pending';
                     unset($post_accepted['ID']);
                     remove_action('save_post', array($this,'save_post') );
-                    $post_new_id = wp_insert_post($post_accepted);
+                    $result = wp_insert_post($post_accepted);
+                    if (is_int($result)) {
+                        $post_new_id = $result;
+                    }
                     add_action('save_post', array($this,'save_post') );
                 break;
                 case 'flag':
