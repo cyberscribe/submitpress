@@ -4,8 +4,10 @@ class SubmitPressContent {
     private $statuses;
     private $post_types;
     private $taxonomies;
+    private $db;
 
     public function __construct() {
+        $this->db = new SubmitPressDb();
         $this->statuses = array(
                               'accepted' => array(__('accepted','submitpress'), _n_noop('Accepted (%s)','Accepted (%s','submitpress')),
                               'rejected' => array(__('rejected','submitpress'), _n_noop('Rejected (%s)','Rejected (%s','submitpress')),
@@ -165,7 +167,7 @@ class SubmitPressContent {
                     'show_tagcloud' => false,
                     'register_meta_box_cb' => array($this, 'register_submission_meta_box'),
                     'show_admin_column' => true,
-                    'hierarchical' => true,
+                    'hierarchical' => false,
                     'rewrite' => array('slug' => 'submission'),
                     'capabilities' => array(
                         'manage_terms' => 'manage_submission',
@@ -354,7 +356,8 @@ class SubmitPressContent {
             }
             if ( ! wp_is_post_revision( $post_id ) ){
                 remove_action('save_post', array($this,'save_post') );
-                wp_update_post($post_new);
+                $post_updated_id = wp_update_post($post_new);
+                $this->update_submission_count_by_post($post_updated_id);
                 add_action('save_post', array($this,'save_post') );
                 if ($post_new_id) {
                     $url = admin_url( sprintf('post.php?post=%s&action=edit', urlencode($post_new_id) ) );
@@ -365,8 +368,56 @@ class SubmitPressContent {
         } //check nonce
     }
 
-    private function save_sp_contribution($post_id) {
+    private function update_submission_count_by_post($post_id) {
+        $submissions = get_the_terms($post_id, 'sp_submission');
+        $submission = $submissions[0];
+        $submission_id = $submission->term_id;
+        $this->update_submission_count_by_submission($submission_id);
+    }
 
+    private function update_submission_count_by_submission( $submission_id) {
+        $submission_items_total = get_posts( array(
+                'post_type' => 'sp_submission_item',
+                'post_status' => get_post_stati(),
+                'tax_query' => array(
+                     array(
+                         'taxonomy' => 'sp_submission',
+                         'field' => 'id',
+                         'terms' => $submission_id
+                     )
+                )
+          ));
+        $submission_items_total_count = sizeof($submission_items_total);
+        $submission_items_accepted = get_posts( array(
+                'post_type' => 'sp_submission_item',
+                'post_status' => 'accepted',
+                'tax_query' => array(
+                     array(
+                         'taxonomy' => 'sp_submission',
+                         'field' => 'id',
+                         'terms' => $submission_id
+                     )
+                )
+          ));
+        $submission_items_accepted_count = sizeof($submission_items_accepted);
+        $submission_items_rejected = get_posts( array(
+                'post_type' => 'sp_submission_item',
+                'post_status' => 'rejected',
+                'tax_query' => array(
+                     array(
+                         'taxonomy' => 'sp_submission',
+                         'field' => 'id',
+                         'terms' => $submission_id
+                     )
+                )
+          ));
+        $submission_items_rejected_count = sizeof($submission_items_rejected);
+        $this->db->update_submission( $submission_id, array( 'accept_count' => $submission_items_accepted_count,
+                                                             'reject_count' => $submission_items_rejected_count,
+                                                             'total_count' => $submission_items_total_count ) );
+    }
+
+    private function save_sp_contribution($post_id) {
     }
     
 }

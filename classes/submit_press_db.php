@@ -35,4 +35,10 @@ class SubmitPressDb {
         }
     }
 
+    public function update_submission( $submission_id, $array) {
+        $table = $this->wpdb->prefix."sp_submissions";
+        $format = array_fill(0, sizeof($array) + 1, '%d');
+        return $this->wpdb->replace($table, $array, $format);
+    }
+
 }
