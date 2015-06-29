@@ -4,7 +4,7 @@ Plugin Name: SubmitPress
 Plugin URI: https://wordpress.org/plugins/submitpress/
 Description: Manage Your User-Contributed Online Magazine with Wordpress
 Author: Robert Peake
-Version: 0.1a
+Version: 0.1
 Author URI: http://www.robertpeake.com/
 Text Domain: submitpress
 Domain Path: /languages/
