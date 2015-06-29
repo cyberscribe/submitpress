@@ -31,6 +31,14 @@ Install as normal for WordPress plugins.
 
  See our project on <a href="https://github.com/cyberscribe/submitpress">GitHub</a>.
 
+= Are you affiliated with WordPress in any way? =
+
+This plugin is not affiliated with or endorsed by WordPress in any way. WordPress and the WordPress logo are trademarks of The WordPress Foundation.
+
+= Do you offer any warranty? = 
+
+The author provides no warranty as to the suitability to any purpose of this software. You agree to use it entirely at your own risk.
+
 == Screenshots ==
 
 1. Accept/Flag/Reject screen for Submission Item management
