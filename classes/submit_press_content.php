@@ -34,10 +34,6 @@ class SubmitPressContent {
         wp_enqueue_script('submitpress_js');
     }
 
-    public function register_menu_page(){
-        add_options_page( __('SubmitPress Options','submitpress'), __('SubmitPress','submitpress'), 'manage_options', dirname(plugin_dir_path(  __FILE__ )).'/views/admin.php');
-    }
-
     public function register_custom_content() {
         $this->post_types[] = 'sp_submission_item';
         register_post_type( 'sp_submission_item',
@@ -102,7 +98,7 @@ class SubmitPressContent {
                   'name' => __( 'Correspondence', 'submitpress' ),
                   'singular_name' => __( 'Correspondence', 'submitpress' )
                 ),
-                'public' => true,
+                'public' => false,
                 'has_archive' => true,
                 'rewrite' => array('slug' => 'correspondence'),
                 'menu_icon' => 'dashicons-email',

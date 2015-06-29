@@ -20,6 +20,7 @@ class SubmitPress {
     private $actions;
     private $permissions;
     private $content;
+    private $admin;
     private $settings;
 
     public static function init() {
@@ -53,6 +54,7 @@ class SubmitPress {
         $this->permissions = new SubmitPressPermissions();
         $this->content = new SubmitPressContent();
         $this->settings = new SubmitPressSettings();
+        $this->admin = new SubmitPressAdmin();
         $this->db = new SubmitPressDb();
 
         /* general setup */
@@ -66,7 +68,7 @@ class SubmitPress {
         $this->add_action('enqueue_scripts', array($this->content, 'register_enqueue_scripts_css'));
 
         /* admin */
-        $this->add_action( 'admin_menu', array($this->content, 'register_menu_page' ));
+        $this->add_action( 'admin_menu', array($this->admin, 'admin_menu' ));
         $this->add_action( 'admin_init', array($this->settings, 'register_settings' ));
         $this->add_action( 'admin_init', array($this->permissions, 'add_custom_capabilities'));
         $this->add_action('admin_enqueue_scripts', array($this->content, 'register_enqueue_admin_scripts_css'));

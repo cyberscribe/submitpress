@@ -36,9 +36,23 @@ class SubmitPressDb {
     }
 
     public function update_submission( $submission_id, $array) {
+        if ($submission_id == 0) {
+            return;
+        }
         $table = $this->wpdb->prefix."sp_submissions";
         $format = array_fill(0, sizeof($array) + 1, '%d');
+        $array['submission_id'] = $submission_id;
         return $this->wpdb->replace($table, $array, $format);
+    }
+
+    public function get_submission_items_by_submission() {
+        $s_table = $this->wpdb->prefix."sp_submissions";
+        $t_table = $this->wpdb->prefix."terms";
+        $query = "select name, slug, term_id, accept_count, reject_count, total_count
+                  from {$s_table} s left join {$t_table} t
+                  on s.`submission_id` = t.`term_id`";
+        $result = $this->wpdb->get_results( $query );
+        return $result;
     }
 
 }
