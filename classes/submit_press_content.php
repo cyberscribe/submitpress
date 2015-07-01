@@ -163,7 +163,7 @@ class SubmitPressContent {
                     'show_tagcloud' => false,
                     'register_meta_box_cb' => array($this, 'register_submission_meta_box'),
                     'show_admin_column' => true,
-                    'hierarchical' => false,
+                    'hierarchical' => true,
                     'rewrite' => array('slug' => 'submission'),
                     'capabilities' => array(
                         'manage_terms' => 'manage_submission',
@@ -197,7 +197,7 @@ class SubmitPressContent {
                         'manage_terms' => 'manage_genre',
                         'edit_terms' => 'manage_genre',
                         'delete_terms' => 'manage_genre',
-                        'assign_terms' => 'edit_posts'
+                        'assign_terms' => 'edit_sp_submission_items'
                     ),
                     'sort' => true,
             )
@@ -260,7 +260,12 @@ class SubmitPressContent {
     }
 
     public function register_submission_item_meta_box( $post ) {
-        add_meta_box('sp_actions', __('SubmitPress Actions','submitpress'), array($this, 'display_submission_item_meta_box'), 'sp_submission_item', 'side', 'high');
+        remove_meta_box( 'submitdiv', 'sp_submission_item', 'side' );
+        if (current_user_can('edit_others_sp_submission_items')) {
+            add_meta_box('sp_actions', __('SubmitPress Actions','submitpress'), array($this, 'display_submission_item_meta_box'), 'sp_submission_item', 'side', 'high');
+        } else {
+            add_meta_box('sp_submit', __('Submit','submitpress'), array($this, 'display_submission_item_submit_box'), 'sp_submission_item', 'side', 'high');
+        }
     }
 
     public function display_submission_item_meta_box( $post ) {
@@ -277,6 +282,28 @@ class SubmitPressContent {
         echo '<input type="hidden" name="sp_action" id="sp_action" value="" />';
         echo '<input type="hidden" name="submitpress_confirm_accept_reject" id="submitpress_confirm_accept_reject" value="'.get_option('submitpress_confirm_accept_reject').'" />';
         wp_nonce_field('sp_action-'.$post->ID, 'sp_action_nonce');
+    }
+
+    public function display_submission_item_submit_box( $post ) {
+        if ('pending' !== $post->post_status) {
+            echo '<div id="submitpost">';
+            echo '    <div id="major-publishing-actions">';
+            echo '        <div id="publishing-action">';
+            echo '            <span class="spinner"></span>';
+            echo '            <input name="original_publish" type="hidden" id="original_publish" value="'.__('Submit for Review','submitpress').'">';
+            echo '            <input type="submit" name="publish" id="publish" class="button button-primary button-large" value="'.__('Submit for Review','submitpress').'">';
+            echo '        </div>';
+            echo '        <div class="clear"></div>';
+            echo '    </div>';
+            echo '</div>';
+            wp_nonce_field('sp_submit-'.$post->ID, 'sp_submit_nonce');
+        } else {
+            echo '<strong>';
+            echo sprintf(__('Submitted %s','submitpress'), 
+                         date_i18n( get_option( 'date_format' ), strtotime( $post->post_date ) ) );
+            echo '<a href="post-new.php?post_type=sp_submission_item" class="add-new-h2">'.__('Add New','submitpress').'</a>';
+            echo '</strong>';
+        }
     }
 
     public function save_post($post_id) {
@@ -305,51 +332,59 @@ class SubmitPressContent {
             return;
             default:
         }
-        if (check_admin_referer('sp_action-'.$post_id, 'sp_action_nonce')) {
-            $post_new = array('ID' => $post_id);
-            $post_new_id = false;
-            switch($_POST['sp_action']) {
-                case 'accept_sp_contribution':
-                    $post_new['post_status'] = 'accepted';
-                    $contribution = get_post($post_id,ARRAY_A);
-                    $contribution['post_type'] = 'sp_contribution';
-                    $contribution['post_status'] = 'pending';
-                    $terms_obj_array = wp_get_post_terms($contribution['ID'], 'sp_genre');
-                    $terms = array();
-                    foreach($terms_obj_array as $terms_obj) {
-                        $terms[] = $terms_obj->term_id;
-                    }
-                    unset($contribution['ID']);
-                    remove_action('save_post', array($this,'save_post') );
-                    $result = wp_insert_post($contribution);
-                    if (is_int($result)) {
-                        $post_new_id = $result;
-                        wp_set_post_terms( $post_new_id, $terms, 'sp_genre');
-                    } else {
-                        throw $result;
-                    }
-                    add_action('save_post', array($this,'save_post') );
-                break;
-                case 'accept_post':
-                    $post_new['post_status'] = 'accepted';
-                    $post_accepted = get_post($post_id,ARRAY_A);
-                    $post_accepted['post_type'] = 'post';
-                    $post_accepted['post_status'] = 'pending';
-                    unset($post_accepted['ID']);
-                    remove_action('save_post', array($this,'save_post') );
-                    $result = wp_insert_post($post_accepted);
-                    if (is_int($result)) {
-                        $post_new_id = $result;
-                    }
-                    add_action('save_post', array($this,'save_post') );
-                break;
-                case 'flag':
-                    $post_new['post_status'] = 'flagged';
-                break;
-                case 'reject':
-                    $post_new['post_status'] = 'rejected';
-                break;
-            }
+        if (!current_user_can( 'edit_others_sp_submissions' )) { //submitter submitting
+            if (check_admin_referer('sp_submit-'.$post_id, 'sp_submit_nonce')) {
+                $url = admin_url( sprintf('post.php?post=%s&action=edit', urlencode($post_id) ) );
+                wp_redirect($url);
+                exit;
+            } //check submission nonce
+        } else {
+            if (check_admin_referer('sp_action-'.$post_id, 'sp_action_nonce')) {
+                $post_new = array('ID' => $post_id);
+                $post_new_id = false;
+                switch($_POST['sp_action']) {
+                    case 'accept_sp_contribution':
+                        $post_new['post_status'] = 'accepted';
+                        $contribution = get_post($post_id,ARRAY_A);
+                        $contribution['post_type'] = 'sp_contribution';
+                        $contribution['post_status'] = 'pending';
+                        $terms_obj_array = wp_get_post_terms($contribution['ID'], 'sp_genre');
+                        $terms = array();
+                        foreach($terms_obj_array as $terms_obj) {
+                            $terms[] = $terms_obj->term_id;
+                        }
+                        unset($contribution['ID']);
+                        remove_action('save_post', array($this,'save_post') );
+                        $result = wp_insert_post($contribution);
+                        if (is_int($result)) {
+                            $post_new_id = $result;
+                            wp_set_post_terms( $post_new_id, $terms, 'sp_genre');
+                        } else {
+                            throw $result;
+                        }
+                        add_action('save_post', array($this,'save_post') );
+                    break;
+                    case 'accept_post':
+                        $post_new['post_status'] = 'accepted';
+                        $post_accepted = get_post($post_id,ARRAY_A);
+                        $post_accepted['post_type'] = 'post';
+                        $post_accepted['post_status'] = 'pending';
+                        unset($post_accepted['ID']);
+                        remove_action('save_post', array($this,'save_post') );
+                        $result = wp_insert_post($post_accepted);
+                        if (is_int($result)) {
+                            $post_new_id = $result;
+                        }
+                        add_action('save_post', array($this,'save_post') );
+                    break;
+                    case 'flag':
+                        $post_new['post_status'] = 'flagged';
+                    break;
+                    case 'reject':
+                        $post_new['post_status'] = 'rejected';
+                    break;
+                }
+            } //admin accept/flag/reject
             if ( ! wp_is_post_revision( $post_id ) ){
                 remove_action('save_post', array($this,'save_post') );
                 $post_updated_id = wp_update_post($post_new);
@@ -361,7 +396,7 @@ class SubmitPressContent {
                     exit;
                 }
             }
-        } //check nonce
+        } //check action nonce
     }
 
     private function update_submission_count_by_post($post_id) {
