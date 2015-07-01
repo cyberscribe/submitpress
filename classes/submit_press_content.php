@@ -394,6 +394,10 @@ class SubmitPressContent {
                     $url = admin_url( sprintf('post.php?post=%s&action=edit', urlencode($post_new_id) ) );
                     wp_redirect($url);
                     exit;
+                } else {
+                    $url = admin_url( 'edit.php?post_type=sp_submission_item' );
+                    wp_redirect($url);
+                    exit;
                 }
             }
         } //check action nonce
