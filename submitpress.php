@@ -4,7 +4,7 @@ Plugin Name: SubmitPress
 Plugin URI: https://wordpress.org/plugins/submitpress/
 Description: Manage Your User-Contributed Online Magazine with Wordpress
 Author: Robert Peake
-Version: 0.1
+Version: 0.1.1
 Author URI: http://www.robertpeake.com/
 Text Domain: submitpress
 Domain Path: /languages/
@@ -45,8 +45,7 @@ class SubmitPress {
     public static function cc2_($input) { //camel case to underscore conversion
           preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
           $parts = $matches[0];
-          array_map('strtolower',$parts);
-          return implode('_', $parts);
+          return strtolower(implode('_', $parts));
     }
 
     public function __construct() {
